@@ -13,21 +13,28 @@ export async function GET(req: NextRequest) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
 
+  // Resolve public origin early for error redirects
+  const _host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const _proto = req.headers.get("x-forwarded-proto") ?? "https";
+  const _origin = _host ? `${_proto}://${_host}` : process.env.NEXT_PUBLIC_APP_URL ?? "https://howamidoing.smartcompanion.online";
+
   if (error) {
-    return NextResponse.redirect(new URL(`/login?error=oauth_failed`, req.url));
+    return NextResponse.redirect(new URL(`${_origin}/login?error=oauth_failed`));
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(new URL("/login?error=oauth_failed", req.url));
+    return NextResponse.redirect(new URL(`${_origin}/login?error=oauth_failed`));
   }
 
   // Forward the oauth_state cookie so backend can validate CSRF
   const oauthStateCookie = req.cookies.get("oauth_state")?.value ?? "";
 
-  // Derive the public origin so the backend builds the matching redirect_uri
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? req.nextUrl.host;
-  const proto = req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol.replace(":", "");
-  const publicOrigin = `${proto}://${host}`;
+  // Derive the public origin from nginx-forwarded headers.
+  // nginx sets Host=$host (the public domain) and X-Forwarded-Proto=$scheme.
+  // Do NOT fall back to req.nextUrl.host — that returns localhost:3000 (internal).
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  const publicOrigin = host ? `${proto}://${host}` : process.env.NEXT_PUBLIC_APP_URL ?? "https://howamidoing.smartcompanion.online";
 
   const backendUrl = `${API_BASE}/api/v1/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
 
