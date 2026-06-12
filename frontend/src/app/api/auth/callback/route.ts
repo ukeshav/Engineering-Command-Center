@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
   // Forward the oauth_state cookie so backend can validate CSRF
   const oauthStateCookie = req.cookies.get("oauth_state")?.value ?? "";
 
+  // Derive the public origin so the backend builds the matching redirect_uri
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? req.nextUrl.host;
+  const proto = req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol.replace(":", "");
+  const publicOrigin = `${proto}://${host}`;
+
   const backendUrl = `${API_BASE}/api/v1/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
 
   const backendResp = await fetch(backendUrl, {
@@ -31,6 +36,8 @@ export async function GET(req: NextRequest) {
     redirect: "manual",
     headers: {
       Cookie: `oauth_state=${oauthStateCookie}`,
+      "X-Forwarded-Proto": proto,
+      "X-Forwarded-Host": host,
     },
   });
 
@@ -47,7 +54,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=oauth_failed", req.url));
   }
 
-  const response = NextResponse.redirect(new URL(location, req.url));
+  // Use the absolute location from backend (it already has the correct public origin)
+  // Fall back to the public origin root if location is relative
+  const finalDest = location.startsWith("http") ? location : `${publicOrigin}${location}`;
+  const response = NextResponse.redirect(new URL(finalDest));
 
   // Set the cookie via Next.js native API — this is reliable and sets it
   // for the Next.js origin (localhost:3000) so the browser always sends it
