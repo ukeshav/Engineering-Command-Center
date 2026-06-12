@@ -51,13 +51,15 @@ jobs:
             echo "==> Restarting services"
             sudo systemctl restart ecc-backend ecc-frontend
 
-            echo "==> Waiting for services to come up"
-            sleep 5
-
-            echo "==> Health check"
-            STATUS=$(curl -sf http://localhost:8000/api/v1/health | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
-            if [ "$STATUS" != "ok" ]; then
-              echo "Health check FAILED: $STATUS"
-              exit 1
-            fi
-            echo "Deploy successful — status: $STATUS"
+            echo "==> Waiting for backend to come up (up to 30s)"
+            for i in $(seq 1 10); do
+              sleep 3
+              STATUS=$(curl -sf http://localhost:8000/api/v1/health 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "")
+              if [ "$STATUS" = "ok" ]; then
+                echo "Deploy successful — status: ok (attempt $i)"
+                exit 0
+              fi
+              echo "  attempt $i: not ready yet..."
+            done
+            echo "Health check FAILED after 30s"
+            exit 1
