@@ -29,6 +29,7 @@ jobs:
             echo "==> Pulling latest code"
             git fetch origin main
             git checkout main
+            git restore .   # discard any local modifications (e.g. package-lock.json)
             git reset --hard origin/main
 
             echo "==> Installing/updating Python deps"
@@ -41,6 +42,8 @@ jobs:
 
             echo "==> Building frontend"
             cd frontend
+            # Remove stale Next.js build lock that can block concurrent builds
+            rm -f .next/BUILD_ID.lock .next/cache/*.lock 2>/dev/null || true
             npm install --legacy-peer-deps --silent
             npm run build
             cd ..
