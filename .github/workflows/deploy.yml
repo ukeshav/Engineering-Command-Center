@@ -33,7 +33,11 @@ jobs:
 
             echo "==> Installing/updating Python deps"
             source backend/.venv/bin/activate
-            pip install --quiet -e backend/
+            pip install --quiet -r backend/requirements.txt 2>/dev/null || pip install --quiet \
+              fastapi uvicorn[standard] pydantic pydantic-settings httpx \
+              qdrant-client google-genai python-dotenv structlog tenacity \
+              python-multipart gitpython aiofiles "python-jose[cryptography]" \
+              itsdangerous apscheduler
 
             echo "==> Building frontend"
             cd frontend
