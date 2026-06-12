@@ -42,8 +42,9 @@ jobs:
 
             echo "==> Building frontend"
             cd frontend
-            # Remove stale Next.js build lock that can block concurrent builds
-            rm -f .next/BUILD_ID.lock .next/cache/*.lock 2>/dev/null || true
+            # Kill any stuck next build process and clear stale lock files
+            pkill -f "next build" 2>/dev/null || true
+            rm -rf .next/cache/webpack 2>/dev/null || true
             npm install --legacy-peer-deps --silent
             npm run build
             cd ..
