@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { BrainCircuit, Lock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_BASE = "";
 
 const ERROR_MESSAGES: Record<string, string> = {
   oauth_failed: "Google sign-in failed. Please try again.",

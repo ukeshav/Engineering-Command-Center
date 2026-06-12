@@ -18,10 +18,11 @@ ALGORITHM = "HS256"
 COOKIE_NAME = "ecc_token"
 
 
-def build_google_auth_url(settings: Settings, state: str) -> str:
+def build_google_auth_url(settings: Settings, state: str, origin: str | None = None) -> str:
+    base = (origin or settings.frontend_url).rstrip("/")
     params = {
         "client_id": settings.google_client_id,
-        "redirect_uri": f"{settings.frontend_url.rstrip('/')}/api/auth/callback",
+        "redirect_uri": f"{base}/api/auth/callback",
         "response_type": "code",
         "scope": "openid email profile",
         "state": state,
@@ -32,8 +33,9 @@ def build_google_auth_url(settings: Settings, state: str) -> str:
     return f"{GOOGLE_AUTH_URL}?{query}"
 
 
-async def exchange_code_for_user(settings: Settings, code: str) -> UserInfo:
+async def exchange_code_for_user(settings: Settings, code: str, origin: str | None = None) -> UserInfo:
     """Exchange OAuth code for Google user info."""
+    base = (origin or settings.frontend_url).rstrip("/")
     async with httpx.AsyncClient() as client:
         token_resp = await client.post(
             GOOGLE_TOKEN_URL,
@@ -41,7 +43,7 @@ async def exchange_code_for_user(settings: Settings, code: str) -> UserInfo:
                 "code": code,
                 "client_id": settings.google_client_id,
                 "client_secret": settings.google_client_secret,
-                "redirect_uri": f"{settings.frontend_url.rstrip('/')}/api/auth/callback",
+                "redirect_uri": f"{base}/api/auth/callback",
                 "grant_type": "authorization_code",
             },
         )

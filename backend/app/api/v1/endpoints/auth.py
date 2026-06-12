@@ -39,11 +39,19 @@ def _check_rate_limit(ip: str) -> None:
     _login_attempts[ip].append(now)
 
 
+def _origin_from_request(request: Request) -> str:
+    """Derive the public-facing origin (scheme + host) from the incoming request."""
+    forwarded_proto = request.headers.get("x-forwarded-proto", "https")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
+    return f"{forwarded_proto}://{host}"
+
+
 @router.get("/login")
-async def login(response: Response) -> RedirectResponse:
+async def login(request: Request, response: Response) -> RedirectResponse:
     """Redirect browser to Google OAuth consent screen."""
     state = secrets.token_urlsafe(32)
-    url = build_google_auth_url(settings, state)
+    origin = _origin_from_request(request)
+    url = build_google_auth_url(settings, state, origin=origin)
     redirect = RedirectResponse(url=url)
     # Store state in a short-lived cookie for CSRF protection
     redirect.set_cookie(
@@ -59,6 +67,7 @@ async def login(response: Response) -> RedirectResponse:
 
 @router.get("/callback")
 async def callback(
+    request: Request,
     code: str,
     state: str,
     oauth_state: str | None = Cookie(default=None),
@@ -67,11 +76,13 @@ async def callback(
     if not oauth_state or state != oauth_state:
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
 
+    origin = _origin_from_request(request)
+
     try:
-        user = await exchange_code_for_user(settings, code)
+        user = await exchange_code_for_user(settings, code, origin=origin)
     except Exception as exc:
         logger.error("oauth_exchange_failed", error=str(exc))
-        redirect = RedirectResponse(url=f"{settings.frontend_url}/login?error=oauth_failed")
+        redirect = RedirectResponse(url=f"{origin}/login?error=oauth_failed")
         redirect.delete_cookie(STATE_COOKIE)
         return redirect
 
@@ -79,12 +90,12 @@ async def callback(
     domain = user.email.split("@")[-1]
     if domain != settings.allowed_email_domain:
         logger.warning("oauth_domain_rejected", email=user.email, domain=domain)
-        redirect = RedirectResponse(url=f"{settings.frontend_url}/login?error=domain_not_allowed")
+        redirect = RedirectResponse(url=f"{origin}/login?error=domain_not_allowed")
         redirect.delete_cookie(STATE_COOKIE)
         return redirect
 
     token = create_jwt(settings, user)
-    redirect = RedirectResponse(url=f"{settings.frontend_url}/")
+    redirect = RedirectResponse(url=f"{origin}/")
     redirect.set_cookie(
         COOKIE_NAME,
         token,
