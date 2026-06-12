@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
 
   if (!eccTokenValue) {
     console.error("[auth/callback] no ecc_token in backend response", setCookies);
-    return NextResponse.redirect(new URL("/login?error=oauth_failed", req.url));
+    return NextResponse.redirect(new URL(`${_origin}/login?error=oauth_failed`));
   }
 
   // Use the absolute location from backend (it already has the correct public origin)
