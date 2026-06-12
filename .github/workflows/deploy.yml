@@ -1,0 +1,56 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd ~/engineeringCommandCenter
+
+            echo "==> Pulling latest code"
+            git fetch origin main
+            git checkout main
+            git reset --hard origin/main
+
+            echo "==> Installing/updating Python deps"
+            source backend/.venv/bin/activate
+            pip install --quiet -e backend/
+
+            echo "==> Building frontend"
+            cd frontend
+            npm install --legacy-peer-deps --silent
+            npm run build
+            cd ..
+
+            echo "==> Restarting services"
+            sudo systemctl restart ecc-backend ecc-frontend
+
+            echo "==> Waiting for services to come up"
+            sleep 5
+
+            echo "==> Health check"
+            STATUS=$(curl -sf http://localhost:8000/api/v1/health | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
+            if [ "$STATUS" != "ok" ]; then
+              echo "Health check FAILED: $STATUS"
+              exit 1
+            fi
+            echo "Deploy successful — status: $STATUS"
