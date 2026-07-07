@@ -15,7 +15,7 @@ Welcome. This document gets you from zero to a fully running local environment i
 ## Step 1 — Get the code
 
 ```bash
-git clone git@github.com:hike-platform/engineering-command-center.git
+git clone git@github.com:your-org/engineering-command-center.git
 cd engineering-command-center
 ```
 
@@ -31,7 +31,7 @@ The `.env` file has sensible defaults for local development. The three variables
 |-----------------|----------------------------------------------------------------------------------|
 | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com) → Get API key                  |
 | `GITHUB_TOKEN`   | github.com → Settings → Developer settings → Personal access tokens → Classic. Needs `read:org` and `repo` scopes. |
-| `GITHUB_ORG`     | Your GitHub organisation slug, e.g. `hike-platform`                             |
+| `GITHUB_ORG`     | Your GitHub organisation slug, e.g. `your-org`                                  |
 
 Everything else can stay as the default for local development.
 

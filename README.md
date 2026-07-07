@@ -37,7 +37,7 @@ A unified engineering intelligence platform giving your team a single pane of gl
 ### 1. Clone & configure
 
 ```bash
-git clone git@github.com:hike-platform/engineering-command-center.git
+git clone git@github.com:your-org/engineering-command-center.git
 cd engineering-command-center
 cp .env.example .env
 # Edit .env — GEMINI_API_KEY, GITHUB_TOKEN, and GITHUB_ORG are required
@@ -177,4 +177,4 @@ See `.env.example` for all variables and descriptions. The three required variab
 |-----------------|--------------------------------------------------|
 | `GEMINI_API_KEY` | Google AI Studio or GCP key with Gemini access  |
 | `GITHUB_TOKEN`   | PAT with `read:org` and `repo` scopes           |
-| `GITHUB_ORG`     | GitHub organisation slug (e.g. `hike-platform`) |
+| `GITHUB_ORG`     | GitHub organisation slug (e.g. `your-org`) |

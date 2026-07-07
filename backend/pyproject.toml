@@ -2,7 +2,7 @@
 name = "engineering-command-center-backend"
 version = "0.1.0"
 description = "Engineering Command Center - Backend API"
-authors = ["Hike Engineering <keshav.upadhyaya@hikeapp.com>"]
+authors = ["Engineering Command Center Contributors"]
 readme = "../README.md"
 packages = [{ include = "app" }]
 
