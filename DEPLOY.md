@@ -309,7 +309,7 @@ sudo rm -f /etc/nginx/sites-enabled/default
 ### Create the site config
 
 ```bash
-sudo nano /etc/nginx/sites-available/hikechatgpt
+sudo nano /etc/nginx/sites-available/engineering-command-center
 ```
 
 ```nginx
@@ -371,7 +371,7 @@ server {
 ### Enable the site and test
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/hikechatgpt /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/engineering-command-center /etc/nginx/sites-enabled/
 sudo nginx -t          # must print "syntax is ok"
 sudo systemctl reload nginx
 ```

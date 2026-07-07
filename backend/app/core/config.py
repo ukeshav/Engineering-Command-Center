@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     google_client_id: str
     google_client_secret: str
     secret_key: str = "change-me-in-production"
-    allowed_email_domain: str = "hikeapp.com"
+    allowed_email_domain: str = "yourdomain.com"
     frontend_url: str = "http://localhost:3000"
     jwt_expire_hours: int = 8
 
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     index_state_path: str = "index_state.json"
 
     # Admin credentials (configurable via env vars)
-    admin_email: str = "admin@hikeapp.com"
+    admin_email: str = "admin@yourdomain.com"
     admin_password: str = "admin@1234"
 
     # Usage tracking DB path

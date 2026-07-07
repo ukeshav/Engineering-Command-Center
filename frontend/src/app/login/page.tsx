@@ -9,7 +9,7 @@ const API_BASE = "";
 
 const ERROR_MESSAGES: Record<string, string> = {
   oauth_failed: "Google sign-in failed. Please try again.",
-  domain_not_allowed: "Only @hikeapp.com email addresses are allowed.",
+  domain_not_allowed: "Only users from your organisation's domain are allowed.",
   invalid_credentials: "Invalid admin credentials.",
 };
 
@@ -56,7 +56,7 @@ function LoginContent() {
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Engineering Command Center</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">
-            {showAdmin ? "Admin sign in" : "Sign in with your Hike account"}
+            {showAdmin ? "Admin sign in" : "Sign in with your account"}
           </p>
         </div>
 
@@ -81,7 +81,7 @@ function LoginContent() {
               Continue with Google
             </a>
             <p className="text-center text-xs text-[var(--text-muted)] mt-6">
-              Access restricted to @hikeapp.com accounts
+              Access restricted to your organisation's domain
             </p>
             <div className="text-center mt-4">
               <button
